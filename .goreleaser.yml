@@ -1,0 +1,110 @@
+# use goreleaser for builds and containers
+#
+# TODO: @memes
+#  - search for APP and update as needed
+#  - modify labels, as needed
+# spell-checker: disable
+---
+project_name: APP
+builds:
+  - env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }}-{{ .Commit }}
+    goos:
+      - freebsd
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - '386'
+      - arm
+      - arm64
+    ignore:
+      - goos: darwin
+        goarch: '386'
+    # TODO: @memes - modify to match location of main package if not in root
+    main: ./cmd/APP/
+    mod_timestamp: '{{ .CommitTimestamp }}'
+gomod:
+  proxy: true
+archives:
+  - format: binary
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+source:
+  enabled: true
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
+  algorithm: sha256
+sboms:
+  - id: archive
+    artifacts: archive
+  - id: source
+    artifacts: source
+signs:
+  - artifacts: checksum
+    cmd: cosign
+    env:
+      - COSIGN_EXPERIMENTAL=1
+    certificate: '${artifact}.pem'
+    args:
+      - sign-blob
+      - --output-certificate
+      - '${certificate}'
+      - --output-signature
+      - '${signature}'
+      - '${artifact}'
+    output: true
+snapshot:
+  name_template: "{{ incpatch .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^[Cc]hore:'
+dockers:
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - memes/{{ .ProjectName }}:latest
+      - memes/{{ .ProjectName }}:{{ .Tag }}
+      - memes/{{ .ProjectName }}:{{ .Major }}
+      - ghcr.io/memes/{{ .ProjectName }}:latest
+      - ghcr.io/memes/{{ .ProjectName }}:{{ .Tag }}
+      - ghcr.io/memes/{{ .ProjectName }}:{{ .Major }}
+    dockerfile: Dockerfile
+    use: docker
+    build_flag_templates:
+      # yamllint disable rule:line-length
+      - "--pull"
+      - "--label=maintainer=Matthew Emes <memes@matthewemes.com>"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.authors=memes@matthewemes.com"
+      - "--label=org.opencontainers.image.description={{ .ProjectName }} description"
+      - "--label=org.opencontainers.image.licenses=MIT"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.source={{ .GitURL }}/tree/{{ .FullCommit }}"
+      - "--label=org.opencontainers.image.documentation={{ .GitURL }}/tree/{{ .FullCommit }}/README.md"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.url={{ .GitURL }}"
+      # yamllint enable rule:line-length
+docker_signs:
+  - cmd: cosign
+    env:
+      - COSIGN_EXPERIMENTAL=1
+    artifacts: images
+    output: true
+    args:
+      - sign
+      - '${artifact}'
+release:
+  draft: false
+  prerelease: auto
+milestones:
+  - close: true
+    fail_on_error: false
+    name_template: "{{ .Tag }}"

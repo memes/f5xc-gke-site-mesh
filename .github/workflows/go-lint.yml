@@ -1,0 +1,61 @@
+# TODO @memes remove is not a golang project
+# These github actions will perform linting and go tests
+# spell-checker: disable
+---
+name: go-lint
+
+# yamllint disable-line rule:truthy
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  go-mod-tidy:
+    # TODO @memes enable if this is a go project
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+      - name: Setup go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify go.mod and go.sum are up to date
+        run: go mod tidy && git diff --exit-code -- go.mod go.sum
+  golangci-lint:
+    # TODO @memes enable if this is a go project
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+      - name: Setup go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Execute linter
+        uses: golangci/golangci-lint-action@v3.3.1
+        with:
+          version: latest
+  go-test:
+    # TODO @memes enable if this is a go project
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+      - name: Setup go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Run go tests
+        run: go test -v ./...
