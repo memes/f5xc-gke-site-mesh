@@ -2,6 +2,11 @@
 .envrc
 .direnv
 .tool-versions
-
-# Ignore generated binaries in dist
-dist/
+.bundle
+Gemfile.lock
+.terraform
+.terraform.lock.hcl
+terraform.tfstate*
+*.auto.tfvars*
+terraform.tfvars*
+!terraform.tfvars.example

@@ -35,3 +35,4 @@ repos:
     rev: v1.29.4
     hooks:
       - id: talisman-commit
+        entry: cmd --githook pre-commit

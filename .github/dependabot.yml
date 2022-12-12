@@ -13,12 +13,6 @@ updates:
       interval: "weekly"
     reviewers:
       - memes
-  - package-ecosystem: "gomod"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    reviewers:
-      - memes
   - package-ecosystem: "terraform"
     directory: "/"
     schedule:

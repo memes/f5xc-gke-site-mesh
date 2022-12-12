@@ -34,12 +34,3 @@ jobs:
         with:
           python-version: '3.10'
       - uses: pre-commit/action@v3.0.0
-  # TODO @memes - this is enabled in repo-template but should be disabled as
-  # necessary
-  hadolint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: hadolint/hadolint-action@v3.0.0
-        with:
-          dockerfile: Dockerfile
