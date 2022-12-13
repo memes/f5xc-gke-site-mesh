@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echoserver
+  namespace: default
+  labels:
+    app: echoserver
+spec:
+  selector:
+    matchLabels:
+      app: echoserver
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: echoserver
+    spec:
+      containers:
+        - name: echoserver
+          image: gcr.io/google_containers/echoserver:1.10
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          securityContext:
+            runAsNonRoot: false
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: http2
+              containerPort: 8443
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echoserver-svc
+  namespace: default
+  labels:
+    app: echoserver
+spec:
+  type: ClusterIP
+  selector:
+    app: echoserver
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+    - name: http2
+      port: 8443
+      targetPort: http2
+      protocol: TCP

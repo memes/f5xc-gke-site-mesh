@@ -1,3 +1,3 @@
-# repo-template
+# F5 Distributed Cloud Site Mesh on GKE
 
-Stuff I always add to my repos.
+This repo shows how to create a full Site Mesh between disparate GKE clusters.

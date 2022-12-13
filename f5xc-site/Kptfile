@@ -1,0 +1,24 @@
+apiVersion: kpt.dev/v1
+kind: Kptfile
+metadata:
+  name: f5xc-k8s-site
+  annotations:
+    config.kubernetes.io/local-config: "true"
+    community.f5.com/purpose: site-mesh-gateway
+    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
+upstream:
+  type: git
+  git:
+    repo: https://memes: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@github.com/memes/proteus-wip
+    directory: /f5xc-k8s-site
+    ref: main
+  updateStrategy: resource-merge
+upstreamLock:
+  type: git
+  git:
+    repo: https://memes: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@github.com/memes/proteus-wip
+    directory: /f5xc-k8s-site
+    ref: main
+    commit: f853914ae79fddee4de5a865ad4590176a258eb7
+info:
+  description: F5 Distributed Cloud k8s site deployment package

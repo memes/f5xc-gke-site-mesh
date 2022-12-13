@@ -10,3 +10,7 @@ terraform.tfstate*
 *.auto.tfvars*
 terraform.tfvars*
 !terraform.tfvars.example
+
+# Ignore generated files
+generated/*
+!generated/.gitkeep

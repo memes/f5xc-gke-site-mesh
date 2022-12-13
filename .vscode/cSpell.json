@@ -4,6 +4,8 @@
     "language": "en",
     "words": [
         "DOCKERHUB",
+        "dotenvrc",
+        "echoserver",
         "fileignoreconfig",
         "goarch",
         "golangci",

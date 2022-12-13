@@ -1,0 +1,10 @@
+# spell-checker: disable
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - service-account.yaml
+
+commonAnnotations:
+  community.f5.com/purpose: service-discovery
+  community.f5.com/source: github.com/memes/f5xc-gke-sitemesh

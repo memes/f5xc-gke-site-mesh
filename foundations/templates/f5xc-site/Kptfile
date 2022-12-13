@@ -1,0 +1,6 @@
+apiVersion: kpt.dev/v1
+kind: Kptfile
+metadata:
+  name: ${name}
+info:
+  description: F5XC site for ${name}
