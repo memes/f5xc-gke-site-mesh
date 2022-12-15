@@ -14,6 +14,9 @@
         "hadolint",
         "hashicorp",
         "incpatch",
+        "kptfile",
+        "kustomization",
+        "Kustomize",
         "ldflags",
         "markdownlint",
         "opencontainers",
@@ -26,5 +29,8 @@
     ],
     "flagWords": [
         "hte"
+    ],
+    "ignorePaths": [
+        "f5xc-site/upstream"
     ]
 }

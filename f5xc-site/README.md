@@ -12,7 +12,7 @@ and site-mesh use.
    kpt pkg get https://github.com/memes/proteus-wip/f5xc-k8s-site[@VERSION] my-site
    ```
 
-2. Apply any local customisations
+2. Apply any local customizations
 
    E.g. to apply a consistent set of annotations
 
@@ -32,4 +32,4 @@ and site-mesh use.
 ## Kustomize
 
 The `upstream` folder includes a `kustomization.yaml` file for use with `kustomize`;
-just include `my-site/upstream` as a resource in an overlay `kustomization` folder.
+just include `my-site/upstream` as a resource in an overlay `folder.

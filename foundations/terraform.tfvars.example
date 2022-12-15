@@ -1,8 +1,28 @@
+# The leading prefix to add to all resource identifiers
+prefix = "my-site-mesh"
+
 # The GCP project identifier to use
 project_id  = "my-gcp-project"
 
-# The Compute Engine regions where the resources will be created
-region = ["us-west1", "us-east1"]
+# A map of clusters to be created
+clusters = {
+    east = {
+        region = "us-east1"
+        private = false
+    }
+    west = {
+        region = "us-west1"
+        private = true
+    }
+}
+
+# The F5XC site token to use when registering the cluster sites
+site_token = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+
+# Optional annotations to add to resources that accept them
+annotations = {
+    "example.com/purpose" = "F5XC site mesh"
+}
 
 # Optional labels to add to resources
 labels = {

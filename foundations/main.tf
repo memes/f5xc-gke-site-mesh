@@ -28,6 +28,7 @@ locals {
     "community.f5.com/cluster-key"  = k
     "community.f5.com/cluster-name" = local.resource_names[k]
     "community.f5.com/cluster-type" = v.private ? "private" : "public"
+    "community.f5.com/provisioner"  = "terraform"
   }, local.common_annotations) }
   labels = { for k, v in var.clusters : k => merge({
     cluster_key = k

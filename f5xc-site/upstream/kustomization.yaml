@@ -3,3 +3,6 @@ kind: Kustomization
 resources:
   - ce_k8s.yml
   - site-mesh-services.yaml
+
+commonAnnotations:
+  community.f5.com/provisioner: kustomize
