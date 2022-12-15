@@ -8,11 +8,11 @@ KEYS := $(shell jq -r '.clusters//{}|keys|.[]' < $(FOUNDATIONS_JSON))
 apply: $(addprefix apply.,$(KEYS))
 
 .PHONY: apply.%
-apply.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/echoserver/kustomization.yaml
+apply.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/application/kustomization.yaml
 	kustomize build $(word 2,$(^D)) | kubectl --kubeconfig $< apply -f -
 
 .PHONY: delete.%
-delete.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/echoserver/kustomization.yaml
+delete.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/application/kustomization.yaml
 	-kustomize build $(word 2,$(^D)) | kubectl --kubeconfig $< delete -f -
 
 .PHONY: clean

@@ -4,11 +4,11 @@ FOUNDATIONS_JSON := $(GENERATED_DIR)/foundations.json
 .DEFAULT: foundations
 
 .PHONY: all
-all: echoserver f5xc-full-site-mesh-group f5xc-site service-discovery
+all: application f5xc-full-site-mesh-group f5xc-site service-discovery
 
-.PHONY: echoserver
-echoserver: $(FOUNDATIONS_JSON)
-	$(MAKE) -C echoserver
+.PHONY: application
+application: $(FOUNDATIONS_JSON)
+	$(MAKE) -C application
 
 .PHONY: f5xc-full-site-mesh-group
 f5xc-full-site-mesh-group: $(FOUNDATIONS_JSON)
@@ -34,7 +34,7 @@ clean:
 	$(MAKE) -C service-discovery clean
 	$(MAKE) -C f5xc-site clean
 	$(MAKE) -C f5xc-full-site-mesh-group clean
-	$(MAKE) -C echoserver clean
+	$(MAKE) -C application clean
 	terraform -chdir=foundations destroy -input=false -auto-approve
 
 .PHONY: realclean
@@ -42,7 +42,7 @@ realclean:
 	$(MAKE) -C service-discovery realclean
 	$(MAKE) -C f5xc-site realclean
 	$(MAKE) -C f5xc-full-site-mesh-group realclean
-	$(MAKE) -C echoserver realclean
+	$(MAKE) -C application realclean
 	if test -d $(GENERATED_DIR); then find $(GENERATED_DIR) -depth 1 -type d -exec rm -rf {} +; fi
 	find . -type d -name .terraform -exec rm -rf {} +
 	find . -type d -name terraform.tfstate.d -exec rm -rf {} +

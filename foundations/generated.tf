@@ -20,12 +20,12 @@ resource "local_file" "private_kubeconfigs" {
   content              = each.value.kubeconfig
 }
 
-resource "local_file" "echoserver_kustomizations" {
+resource "local_file" "application_kustomizations" {
   for_each             = merge(module.public, module.private)
-  filename             = format("%s/../generated/%s/echoserver/kustomization.yaml", path.module, each.key)
+  filename             = format("%s/../generated/%s/application/kustomization.yaml", path.module, each.key)
   file_permission      = "0644"
   directory_permission = "0755"
-  content = templatefile("${path.module}/templates/echoserver/kustomization.yaml", {
+  content = templatefile("${path.module}/templates/application/kustomization.yaml", {
     annotations = local.annotations[each.key]
     labels      = local.labels[each.key]
   })
@@ -107,7 +107,7 @@ resource "local_file" "json" {
     module.private,
     local_file.public_kubeconfigs,
     local_file.private_kubeconfigs,
-    local_file.echoserver_kustomizations,
+    local_file.application_kustomizations,
     local_file.vpm_configs,
     local_file.f5xc_kustomizations,
     local_file.service_discovery_kustomizations,
