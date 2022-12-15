@@ -8,6 +8,8 @@ resources:
   - Kptfile
   - resourcegroup.yaml
 
+commonAnnotations: ${jsonencode(annotations)}
+commonLabels: ${jsonencode(labels)}
 configMapGenerator:
   - name: vpm-cfg
     namespace: ves-system

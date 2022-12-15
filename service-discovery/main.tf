@@ -22,9 +22,12 @@ provider "kubernetes" {
 }
 
 locals {
-  cluster     = lookup(lookup(jsondecode(file(var.foundations_json)), "clusters"), var.key)
-  labels      = {}
-  annotations = {}
+  foundations = jsondecode(file(var.foundations_json))
+  cluster     = local.foundations.clusters[var.key]
+  labels      = merge({}, local.foundations.labels)
+  annotations = merge({
+    "community.f5.com/provisioner" = "terraform"
+  }, local.foundations.annotations)
 }
 
 data "kubernetes_secret_v1" "secret" {

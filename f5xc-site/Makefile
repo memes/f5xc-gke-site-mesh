@@ -16,7 +16,7 @@ $(GENERATED_DIR)/%/f5xc-site/resourcegroup.yaml: $(GENERATED_DIR)/%/kubeconfig.y
 	kpt live init --kubeconfig $< $(@D)
 
 .PHONY: register.%
-register.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/f5xc-site/kustomization.yaml
+register.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/f5xc-site/kustomization.yaml $(FOUNDATIONS_JSON)
 	kubectl --kubeconfig $< wait --timeout 120s --for jsonpath='{.status.readyReplicas}'=3 \
 		statefulset/$(shell kustomize build $(word 2,$(^D)) | yq eval --no-doc 'select(.kind=="StatefulSet")|.metadata|.name + " --namespace " + .namespace')
 	terraform init -input=false
@@ -31,14 +31,12 @@ delete.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/f5xc-site/kustom
 	-kustomize build $(word 2,$(^D)) | kpt live destroy --kubeconfig $< -
 
 .PHONY: unregister.%
-# TODO @memes - can't find a way to delete a CE and/or kubernetes site in vesctl or API
-unregister.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/f5xc-site/kustomization.yaml
+unregister.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/f5xc-site/kustomization.yaml $(FOUNDATIONS_JSON)
 	-terraform workspace select $* && \
 		terraform destroy -auto-approve -input=false \
 		-var foundations_json=$(FOUNDATIONS_JSON) \
 		-var key=$*
 	terraform workspace select default
-	@echo "Don't forget to delete the site $(shell jq -r '.clusters.$*.name' < $(FOUNDATIONS_JSON)) in F5XC console"
 
 .PHONY: clean
 clean: $(addprefix unregister.,$(KEYS)) $(addprefix delete.,$(KEYS))

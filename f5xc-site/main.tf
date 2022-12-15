@@ -49,3 +49,12 @@ resource "volterra_registration_approval" "site" {
   cluster_size = 3
   hostname     = each.value
 }
+
+resource "volterra_site_state" "site" {
+  name  = local.cluster.name
+  state = "DECOMMISSIONING"
+  when  = "delete"
+  depends_on = [
+    volterra_registration_approval.site,
+  ]
+}

@@ -1,8 +1,10 @@
 GENERATED_DIR := generated
 FOUNDATIONS_JSON := $(GENERATED_DIR)/foundations.json
 
+.DEFAULT: foundations
+
 .PHONY: all
-all: echoserver f5xc-full-site-mesh-group f5xc-site
+all: echoserver f5xc-full-site-mesh-group f5xc-site service-discovery
 
 .PHONY: echoserver
 echoserver: $(FOUNDATIONS_JSON)

@@ -8,9 +8,9 @@ KEYS := $(shell jq -r '.clusters//{}|keys|.[]' < $(FOUNDATIONS_JSON))
 all: $(addprefix apply.,$(KEYS))
 
 .PHONY: apply.%
-apply.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/service-discovery/kustomization.yaml
+apply.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/service-discovery/kustomization.yaml $(FOUNDATIONS_JSON)
 	vesctl configuration get site --namespace system \
-		$(shell jq -r '.clusters.$*.name' < $(GENERATED_DIR)/foundations.json) >/dev/null 2>&1 \
+		$(shell jq -r '.clusters.$*.name' <  $(FOUNDATIONS_JSON)) >/dev/null 2>&1 \
 		|| (echo "F5 XC site for $* hasn't been created" && false)
 	kustomize build $(word 2,$(^D)) | kubectl --kubeconfig $< apply -f -
 	terraform init -input=false
@@ -23,7 +23,7 @@ apply.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/service-discovery
 	terraform workspace select default
 
 .PHONY: delete.%
-delete.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/service-discovery/kustomization.yaml
+delete.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/service-discovery/kustomization.yaml $(FOUNDATIONS_JSON)
 	-kustomize build $(word 2,$(^D)) | kubectl --kubeconfig $< delete -f -
 	-terraform workspace select $* && \
 		terraform destroy -auto-approve -input=false \

@@ -7,6 +7,8 @@ resources:
   - ../../../service-discovery
 
 namePrefix: ${name}-
+commonAnnotations: ${jsonencode(annotations)}
+commonLabels: ${jsonencode(labels)}
 
 patches:
   - target:

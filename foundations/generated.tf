@@ -1,5 +1,4 @@
 # This file contains generated file resources
-
 resource "local_file" "public_kubeconfigs" {
   for_each             = module.public
   filename             = format("%s/../generated/%s/kubeconfig.yaml", path.module, each.key)
@@ -27,7 +26,8 @@ resource "local_file" "echoserver_kustomizations" {
   file_permission      = "0644"
   directory_permission = "0755"
   content = templatefile("${path.module}/templates/echoserver/kustomization.yaml", {
-    cluster = each.key
+    annotations = local.annotations[each.key]
+    labels      = local.labels[each.key]
   })
 }
 
@@ -41,9 +41,7 @@ resource "local_file" "vpm_configs" {
     latitude  = module.regions.results[each.value.region].latitude
     longitude = module.regions.results[each.value.region].longitude
     token     = var.site_token
-    labels = {
-      f5xc-full-site-mesh-group = var.prefix
-    }
+    labels    = local.labels[each.key]
   })
 }
 
@@ -62,7 +60,10 @@ resource "local_file" "f5xc_kustomizations" {
   filename             = format("%s/../generated/%s/f5xc-site/kustomization.yaml", path.module, each.key)
   file_permission      = "0644"
   directory_permission = "0755"
-  content              = templatefile("${path.module}/templates/f5xc-site/kustomization.yaml", {})
+  content = templatefile("${path.module}/templates/f5xc-site/kustomization.yaml", {
+    annotations = local.annotations[each.key]
+    labels      = local.labels[each.key]
+  })
 }
 
 resource "local_file" "service_discovery_kustomizations" {
@@ -71,7 +72,9 @@ resource "local_file" "service_discovery_kustomizations" {
   file_permission      = "0644"
   directory_permission = "0755"
   content = templatefile("${path.module}/templates/service-discovery/kustomization.yaml", {
-    name = local.resource_names[each.key]
+    name        = local.resource_names[each.key]
+    annotations = local.annotations[each.key]
+    labels      = local.labels[each.key]
   })
 }
 
@@ -80,7 +83,9 @@ resource "local_file" "json" {
   file_permission      = "0644"
   directory_permission = "0755"
   content = jsonencode({
-    prefix = var.prefix
+    prefix      = var.prefix
+    annotations = local.common_annotations
+    labels      = local.common_labels
     clusters = { for k, v in var.clusters : k => {
       name           = local.resource_names[k]
       private        = v.private

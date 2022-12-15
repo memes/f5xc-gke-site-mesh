@@ -14,26 +14,34 @@ provider "volterra" {
 }
 
 locals {
-  prefix = lookup(jsondecode(file(var.foundations_json)), "prefix")
+  foundations = jsondecode(file(var.foundations_json))
+  labels      = merge({}, local.foundations.labels)
+  annotations = merge({
+    "community.f5.com/provisioner" = "terraform"
+  }, local.foundations.annotations)
 }
 
 # Create a virtual site that matches on a label common to all clusters in the demo.
 resource "volterra_virtual_site" "group" {
-  name        = local.prefix
+  name        = local.foundations.prefix
   namespace   = "shared"
   description = "F5XC GKE Full Site Mesh demo"
+  annotations = local.annotations
+  labels      = local.labels
   site_selector {
     expressions = [
-      format("f5xc-full-site-mesh-group = %s", local.prefix)
+      join(",", [for k, v in local.foundations.labels : format("%s=%s", k, v)])
     ]
   }
   site_type = "CUSTOMER_EDGE"
 }
 
 resource "volterra_site_mesh_group" "group" {
-  name        = local.prefix
+  name        = local.foundations.prefix
   namespace   = "system"
   description = "F5XC GKE Full Site Mesh demo"
+  annotations = local.annotations
+  labels      = local.labels
   full_mesh {
     data_plane_mesh = true
   }

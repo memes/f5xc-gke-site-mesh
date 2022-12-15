@@ -1,5 +1,6 @@
 GENERATED_DIR := ../generated
-KEYS := $(shell jq -r '.clusters//{}|keys|.[]' < $(GENERATED_DIR)/foundations.json)
+FOUNDATIONS_JSON := $(GENERATED_DIR)/foundations.json
+KEYS := $(shell jq -r '.clusters//{}|keys|.[]' < $(FOUNDATIONS_JSON))
 
 .DEFAULT: apply
 

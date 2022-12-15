@@ -13,11 +13,25 @@ terraform {
 }
 
 locals {
-  labels = merge({
-    source = "github_com_memes_f5xc-gke-site-mesh"
+  common_annotations = merge({
+    "community.f5.com/demo-name"   = "f5xc-gke-site-mesh"
+    "community.f5.com/demo-prefix" = var.prefix
+    "community.f5.com/demo-source" = "github.com/memes/f5xc-gke-site-mesh"
+  }, var.annotations)
+  common_labels = merge({
+    demo_name   = "f5xc-gke-site-mesh"
+    demo_prefix = var.prefix
   }, var.labels)
   resource_names = { for k, v in var.clusters : k => format("%s-%s", var.prefix, k) }
   sa_emails      = { for k, v in var.clusters : k => format("%s@%s.iam.gserviceaccount.com", local.resource_names[k], var.project_id) }
+  annotations = { for k, v in var.clusters : k => merge({
+    "community.f5.com/cluster-key"  = k
+    "community.f5.com/cluster-name" = local.resource_names[k]
+    "community.f5.com/cluster-type" = v.private ? "private" : "public"
+  }, local.common_annotations) }
+  labels = { for k, v in var.clusters : k => merge({
+    cluster_key = k
+  }, local.common_labels) }
 }
 
 data "google_compute_zones" "zones" {
@@ -91,7 +105,7 @@ module "restricted_apis_dns" {
   source             = "/Users/memes/projects/personal/proteus-wip/restricted-apis-dns/"
   project_id         = var.project_id
   name               = format("%s-restricted-apis", var.prefix)
-  labels             = local.labels
+  labels             = local.common_labels
   network_self_links = [for vpc in module.vpcs : vpc.self_link]
 }
 
@@ -105,7 +119,7 @@ module "bastions" {
   proxy_container_image = var.bastion_proxy_container_image
   zone                  = data.google_compute_zones.zones[each.value.region].names[0]
   subnet                = module.vpcs[each.key].subnets[each.value.region]
-  labels                = local.labels
+  labels                = local.common_labels
   bastion_targets = {
     cidrs = [
       "172.16.0.0/12",
@@ -134,7 +148,7 @@ module "public" {
   create_service_account            = false
   grant_registry_access             = false
   service_account                   = local.sa_emails[each.key]
-  cluster_resource_labels           = local.labels
+  cluster_resource_labels           = local.labels[each.key]
   skip_provisioners                 = true
   issue_client_certificate          = false
   identity_namespace                = "enabled"
@@ -162,10 +176,13 @@ module "public" {
     disk_size_gb = 50
     disk_type    = "pd-standard"
     image_type   = "COS_CONTAINERD"
-    machine_type = "e2-standard-8"
+    machine_type = "e2-standard-4"
     min_count    = 1
     max_count    = 2
   }]
+  node_pools_labels = {
+    (each.key) = local.labels[each.key]
+  }
   depends_on = [
     module.sas,
     module.vpcs,
@@ -186,27 +203,22 @@ module "private" {
     master_cidr         = "192.168.0.0/28"
   }
   service_account = local.sa_emails[each.key]
-  labels          = local.labels
+  labels          = local.labels[each.key]
   node_pools = {
-    # NOTE: node counts are per-zone; this will typically result in a node pool
-    # with 3 nodes of type e2-standard-4 with the custom taint applied that will
-    # be used when deploying F5 Distributed Cloud CE pod.
     (each.key) = {
-      auto_upgrade       = true
-      autoscaling        = true
-      min_nodes_per_zone = 1
-      max_nodes_per_zone = 2
-      location_policy    = null
-      auto_repair        = true
-      disk_size          = 50
-      disk_type          = "pd-standard"
-      image_type         = "COS_CONTAINERD"
-      labels = merge(local.labels, {
-        f5xc-gke-site-mesh-node = "ce-gateway",
-      })
+      auto_upgrade                = true
+      autoscaling                 = true
+      min_nodes_per_zone          = 1
+      max_nodes_per_zone          = 2
+      location_policy             = null
+      auto_repair                 = true
+      disk_size                   = 50
+      disk_type                   = "pd-standard"
+      image_type                  = "COS_CONTAINERD"
+      labels                      = local.labels[each.key]
       local_ssd_count             = 0
       ephemeral_local_ssd_count   = 0
-      machine_type                = "e2-standard-8"
+      machine_type                = "e2-standard-4"
       min_cpu_platform            = null
       preemptible                 = false
       spot                        = false
@@ -222,14 +234,7 @@ module "private" {
       metadata                    = null
       sysctls                     = null
       taints                      = null
-      # taints = [
-      #   {
-      #     key = "community.f5.com/f5xc-gke-site-mesh-node"
-      #     value = "ce-gateway"
-      #     effect = "NO_SCHEDULE"
-      #   },
-      # ],
-      tags = null
+      tags                        = null
     }
   }
   master_authorized_networks = [
