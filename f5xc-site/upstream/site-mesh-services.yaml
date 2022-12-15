@@ -7,8 +7,6 @@ metadata: # kpt-merge: ves-system/ver-nodeport-ver-0
     app: ver
   annotations:
     internal.kpt.dev/upstream-identifier: '|Service|ves-system|ver-nodeport-ver-0'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 spec:
   type: NodePort
   ports:
@@ -29,8 +27,6 @@ metadata: # kpt-merge: ves-system/ver-nodeport-ver-1
     app: ver
   annotations:
     internal.kpt.dev/upstream-identifier: '|Service|ves-system|ver-nodeport-ver-1'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 spec:
   type: NodePort
   ports:
@@ -51,8 +47,6 @@ metadata: # kpt-merge: ves-system/ver-nodeport-ver-2
     app: ver
   annotations:
     internal.kpt.dev/upstream-identifier: '|Service|ves-system|ver-nodeport-ver-2'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 spec:
   type: NodePort
   ports:

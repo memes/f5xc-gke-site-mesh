@@ -4,8 +4,6 @@ metadata: # kpt-merge: /ves-system
   name: ves-system
   annotations:
     internal.kpt.dev/upstream-identifier: '|Namespace|default|ves-system'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -14,8 +12,6 @@ metadata: # kpt-merge: ves-system/volterra-sa
   namespace: ves-system
   annotations:
     internal.kpt.dev/upstream-identifier: '|ServiceAccount|ves-system|volterra-sa'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -24,8 +20,6 @@ metadata: # kpt-merge: ves-system/volterra-admin-role
   namespace: ves-system
   annotations:
     internal.kpt.dev/upstream-identifier: 'rbac.authorization.k8s.io|Role|ves-system|volterra-admin-role'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 rules:
 - apiGroups: ["*"]
   resources: ["*"]
@@ -38,8 +32,6 @@ metadata: # kpt-merge: ves-system/volterra-admin-role-binding
   namespace: ves-system
   annotations:
     internal.kpt.dev/upstream-identifier: 'rbac.authorization.k8s.io|RoleBinding|ves-system|volterra-admin-role-binding'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 subjects:
 - kind: ServiceAccount
   name: volterra-sa
@@ -57,8 +49,6 @@ metadata: # kpt-merge: ves-system/volterra-ce-init
   namespace: ves-system
   annotations:
     internal.kpt.dev/upstream-identifier: 'apps|DaemonSet|ves-system|volterra-ce-init'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 spec:
   selector:
     matchLabels:
@@ -67,9 +57,6 @@ spec:
     metadata:
       labels:
         name: volterra-ce-init
-      annotations:
-        community.f5.com/purpose: site-mesh-gateway
-        community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
     spec:
       hostNetwork: true
       hostPID: true
@@ -94,8 +81,6 @@ metadata: # kpt-merge: ves-system/vpm-sa
   namespace: ves-system
   annotations:
     internal.kpt.dev/upstream-identifier: '|ServiceAccount|ves-system|vpm-sa'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -104,8 +89,6 @@ metadata: # kpt-merge: ves-system/vpm-role
   namespace: ves-system
   annotations:
     internal.kpt.dev/upstream-identifier: 'rbac.authorization.k8s.io|Role|ves-system|vpm-role'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 rules:
 - apiGroups: ["*"]
   resources: ["*"]
@@ -117,8 +100,6 @@ metadata: # kpt-merge: ves-system/vpm-cluster-role
   name: vpm-cluster-role
   annotations:
     internal.kpt.dev/upstream-identifier: 'rbac.authorization.k8s.io|ClusterRole|ves-system|vpm-cluster-role'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 rules:
 - apiGroups: [""]
   resources: ["nodes"]
@@ -131,8 +112,6 @@ metadata: # kpt-merge: ves-system/vpm-role-binding
   namespace: ves-system
   annotations:
     internal.kpt.dev/upstream-identifier: 'rbac.authorization.k8s.io|RoleBinding|ves-system|vpm-role-binding'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 subjects:
 - kind: ServiceAccount
   name: vpm-sa
@@ -149,8 +128,6 @@ metadata: # kpt-merge: /vpm-sa
   name: vpm-sa
   annotations:
     internal.kpt.dev/upstream-identifier: 'rbac.authorization.k8s.io|ClusterRoleBinding|default|vpm-sa'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -166,8 +143,6 @@ metadata: # kpt-merge: /ver
   name: ver
   annotations:
     internal.kpt.dev/upstream-identifier: 'rbac.authorization.k8s.io|ClusterRoleBinding|default|ver'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -184,8 +159,6 @@ metadata: # kpt-merge: ves-system/vpm-cfg
   namespace: ves-system
   annotations:
     internal.kpt.dev/upstream-identifier: '|ConfigMap|ves-system|vpm-cfg'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 data:
   config.yaml: |
     Vpm:
@@ -213,8 +186,6 @@ metadata: # kpt-merge: ves-system/vp-manager
   namespace: ves-system
   annotations:
     internal.kpt.dev/upstream-identifier: 'apps|StatefulSet|ves-system|vp-manager'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 spec:
   replicas: 3
   selector:
@@ -226,9 +197,6 @@ spec:
       labels:
         name: vpm
         statefulset: vp-manager
-      annotations:
-        community.f5.com/purpose: site-mesh-gateway
-        community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
     spec:
       serviceAccountName: vpm-sa
       affinity:
@@ -310,8 +278,6 @@ metadata: # kpt-merge: ves-system/vpm
   namespace: ves-system
   annotations:
     internal.kpt.dev/upstream-identifier: '|Service|ves-system|vpm'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 spec:
   type: NodePort
   selector:
@@ -320,62 +286,6 @@ spec:
   - protocol: TCP
     port: 65003
     targetPort: 65003
-    # CHANGE ME
-    # PLEASE UNCOMMENT TO ENABLE SITE TO SITE ACCESS VIA NODEPORT
-    #---
-    #apiVersion: v1
-    #kind: Service
-    #metadata:
-    #  name: ver-nodeport-ver-0
-    #  namespace: ves-system
-    #  labels:
-    #    app: ver
-    #spec:
-    #  type: NodePort
-    #  ports:
-    #    - name: "ver-ike"
-    #      protocol: UDP
-    #      port: 4500
-    #      targetPort: 4500
-    #      nodePort: 30500
-    #  selector:
-    #    statefulset.kubernetes.io/pod-name: ver-0
-    #---
-    #apiVersion: v1
-    #kind: Service
-    #metadata:
-    #  name: ver-nodeport-ver-1
-    #  namespace: ves-system
-    #  labels:
-    #    app: ver
-    #spec:
-    #  type: NodePort
-    #  ports:
-    #    - name: "ver-ike"
-    #      protocol: UDP
-    #      port: 4500
-    #      targetPort: 4500
-    #      nodePort: 30501
-    #  selector:
-    #    statefulset.kubernetes.io/pod-name: ver-1
-    #---
-    #apiVersion: v1
-    #kind: Service
-    #metadata:
-    #  name: ver-nodeport-ver-2
-    #  namespace: ves-system
-    #  labels:
-    #    app: ver
-    #spec:
-    #  type: NodePort
-    #  ports:
-    #    - name: "ver-ike"
-    #      protocol: UDP
-    #      port: 4500
-    #      targetPort: 4500
-    #      nodePort: 30502
-    #  selector:
-    #    statefulset.kubernetes.io/pod-name: ver-2
 # CHANGE ME
 # PLEASE UNCOMMENT TO ENABLE SITE TO SITE ACCESS VIA NODEPORT
 #---

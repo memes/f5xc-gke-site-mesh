@@ -3,7 +3,3 @@ kind: Kustomization
 resources:
   - ce_k8s.yml
   - site-mesh-services.yaml
-metadata:
-  annotations:
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh

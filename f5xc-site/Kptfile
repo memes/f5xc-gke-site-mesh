@@ -4,8 +4,6 @@ metadata:
   name: f5xc-k8s-site
   annotations:
     config.kubernetes.io/local-config: "true"
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 upstream:
   type: git
   git:

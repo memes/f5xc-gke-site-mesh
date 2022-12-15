@@ -5,7 +5,5 @@ metadata: # kpt-merge: /kptfile.kpt.dev
   annotations:
     config.kubernetes.io/local-config: "true"
     internal.kpt.dev/upstream-identifier: '|ConfigMap|default|kptfile.kpt.dev'
-    community.f5.com/purpose: site-mesh-gateway
-    community.f5.com/source: github.com/memes/f5xc-gke-sitemesh
 data:
   name: example
