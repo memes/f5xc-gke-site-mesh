@@ -24,6 +24,7 @@
         "thumbsup",
         "trimpath",
         "venv",
+        "wontfix",
         "workdir",
         "yamllint"
     ],

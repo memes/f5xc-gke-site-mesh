@@ -1,4 +1,3 @@
-# TODO: @memes - remove unused plugins for project
 ---
 # spell-checker:disable
 repos:
@@ -16,12 +15,8 @@ repos:
       - id: terraform_fmt
       - id: terraform_docs
         args: ['--args=--sort-by=required --hide=providers']
-  - repo: https://github.com/mattlqx/pre-commit-ruby
-    rev: v1.3.5
-    hooks:
-      - id: rubocop
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.8.0.4
+    rev: v0.9.0.2
     hooks:
       - id: shellcheck
   - repo: https://github.com/pre-commit/pre-commit-hooks
