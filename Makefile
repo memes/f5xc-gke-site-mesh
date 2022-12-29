@@ -16,6 +16,7 @@ foundations: $(FOUNDATIONS_JSON)
 
 $(FOUNDATIONS_JSON): $(wildcard foundations/*.tf foundations/*.tfvars $(addsuffix /*,$(addprefix foundations/templates/,$(SUBS))))
 	terraform -chdir=foundations init -input=false
+	terraform -chdir=foundations apply -input=false -auto-approve -target=random_pet.prefix
 	terraform -chdir=foundations apply -input=false -auto-approve
 
 .PHONY: clean.%

@@ -9,16 +9,28 @@ terraform {
       source  = "hashicorp/local"
       version = ">= 2.2"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = ">= 3.4"
+    }
+  }
+}
+
+resource "random_pet" "prefix" {
+  length = 2
+  keepers = {
+    project_id = var.project_id
+    site_token = var.site_token
   }
 }
 
 locals {
   common_labels = merge({
     demo_name   = "f5xc-gke-site-mesh"
-    demo_prefix = var.prefix
+    demo_prefix = random_pet.prefix.id
   }, var.labels)
-  resource_names = { for k, v in var.clusters : k => format("%s-%s", var.prefix, k) }
-  sa_emails      = { for k, v in var.clusters : k => format("%s@%s.iam.gserviceaccount.com", local.resource_names[k], var.project_id) }
+  resource_names = { for k, v in var.clusters : k => format("%s-%s", random_pet.prefix.id, k) }
+  sa_emails      = { for k, v in var.clusters : k => format("%s@%s.iam.gserviceaccount.com", local.resource_names[k], random_pet.prefix.keepers.project_id) }
   labels = { for k, v in var.clusters : k => merge({
     cluster_key = k
   }, local.common_labels) }
@@ -26,7 +38,7 @@ locals {
 
 data "google_compute_zones" "zones" {
   for_each = toset([for k, v in var.clusters : v.region])
-  project  = var.project_id
+  project  = random_pet.prefix.keepers.project_id
   region   = each.value
   status   = "UP"
 }
@@ -51,7 +63,7 @@ module "sas" {
   for_each = var.clusters
   # TODO @memes - redirect to published modules
   source     = "/Users/memes/projects/personal/proteus-wip/private-gke//modules/sa/"
-  project_id = var.project_id
+  project_id = random_pet.prefix.keepers.project_id
   name       = local.resource_names[each.key]
 }
 
@@ -60,7 +72,7 @@ module "vpcs" {
   for_each = var.clusters
   # TODO @memes - update to published modules
   source      = "/Users/memes/projects/personal/proteus-wip/multi-region-private-network/"
-  project_id  = var.project_id
+  project_id  = random_pet.prefix.keepers.project_id
   name        = local.resource_names[each.key]
   description = format("%s VPC for f5xc-gke-site-mesh demo", title(each.key))
   regions     = [each.value.region]
@@ -93,8 +105,8 @@ module "vpcs" {
 module "restricted_apis_dns" {
   # TODO @memes - redirect to published modules
   source             = "/Users/memes/projects/personal/proteus-wip/restricted-apis-dns/"
-  project_id         = var.project_id
-  name               = format("%s-restricted-apis", var.prefix)
+  project_id         = random_pet.prefix.keepers.project_id
+  name               = format("%s-restricted-apis", random_pet.prefix.id)
   labels             = local.common_labels
   network_self_links = [for vpc in module.vpcs : vpc.self_link]
 }
@@ -104,7 +116,7 @@ module "bastions" {
   for_each              = { for k, v in var.clusters : k => v if v.private }
   source                = "memes/private-bastion/google"
   version               = "2.1.0"
-  project_id            = var.project_id
+  project_id            = random_pet.prefix.keepers.project_id
   prefix                = local.resource_names[each.key]
   proxy_container_image = var.bastion_proxy_container_image
   zone                  = data.google_compute_zones.zones[each.value.region].names[0]
@@ -129,7 +141,7 @@ module "public" {
   for_each                          = { for k, v in var.clusters : k => v if !v.private }
   source                            = "terraform-google-modules/kubernetes-engine/google//modules/beta-public-cluster-update-variant"
   version                           = "24.0.0"
-  project_id                        = var.project_id
+  project_id                        = random_pet.prefix.keepers.project_id
   name                              = local.resource_names[each.key]
   description                       = format("%s public GKE cluster for f5xc-gke-site-mesh demo", title(each.key))
   regional                          = true
@@ -159,7 +171,7 @@ module "public" {
   remove_default_node_pool = true
   initial_node_count       = 0
   node_pools = [{
-    name         = each.key
+    name         = "alpha"
     auto_repair  = true
     autoscaling  = true
     auto_upgrade = true
@@ -168,10 +180,10 @@ module "public" {
     image_type   = "COS_CONTAINERD"
     machine_type = "e2-standard-4"
     min_count    = 1
-    max_count    = 2
+    max_count    = 3
   }]
   node_pools_labels = {
-    (each.key) = local.labels[each.key]
+    alpha = local.labels[each.key]
   }
   depends_on = [
     module.sas,
@@ -183,7 +195,7 @@ module "private" {
   for_each = { for k, v in var.clusters : k => v if v.private }
   # TODO @memes - redirect to published modules
   source      = "/Users/memes/projects/personal/proteus-wip/private-gke/"
-  project_id  = var.project_id
+  project_id  = random_pet.prefix.keepers.project_id
   name        = local.resource_names[each.key]
   description = format("%s private GKE cluster for f5xc-gke-site-mesh demo", title(each.key))
   subnet = {
@@ -195,11 +207,11 @@ module "private" {
   service_account = local.sa_emails[each.key]
   labels          = local.labels[each.key]
   node_pools = {
-    (each.key) = {
+    alpha = {
       auto_upgrade                = true
       autoscaling                 = true
       min_nodes_per_zone          = 1
-      max_nodes_per_zone          = 2
+      max_nodes_per_zone          = 3
       location_policy             = null
       auto_repair                 = true
       disk_size                   = 50

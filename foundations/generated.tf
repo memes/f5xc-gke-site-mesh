@@ -3,7 +3,7 @@
 locals {
   common_annotations = merge({
     "community.f5.com/demo-name"   = "f5xc-gke-site-mesh"
-    "community.f5.com/demo-prefix" = var.prefix
+    "community.f5.com/demo-prefix" = random_pet.prefix.id
     "community.f5.com/demo-source" = "github.com/memes/f5xc-gke-site-mesh"
   }, var.annotations)
   annotations = { for k, v in var.clusters : k => merge({
@@ -54,7 +54,7 @@ resource "local_file" "vpm_configs" {
     name      = local.resource_names[each.key]
     latitude  = module.regions.results[each.value.region].latitude
     longitude = module.regions.results[each.value.region].longitude
-    token     = var.site_token
+    token     = random_pet.prefix.keepers.site_token
     labels    = local.labels[each.key]
   })
 }
@@ -97,7 +97,7 @@ resource "local_file" "json" {
   file_permission      = "0644"
   directory_permission = "0755"
   content = jsonencode({
-    prefix      = var.prefix
+    prefix      = random_pet.prefix.id
     annotations = local.common_annotations
     labels      = local.common_labels
     clusters = { for k, v in var.clusters : k => {

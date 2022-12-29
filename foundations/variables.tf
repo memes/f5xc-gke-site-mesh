@@ -1,8 +1,3 @@
-variable "prefix" {
-  type    = string
-  default = "f5xc-site-mesh"
-}
-
 variable "project_id" {
   type = string
 }

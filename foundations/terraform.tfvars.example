@@ -1,6 +1,3 @@
-# The leading prefix to add to all resource identifiers
-prefix = "my-site-mesh"
-
 # The GCP project identifier to use
 project_id  = "my-gcp-project"
 
