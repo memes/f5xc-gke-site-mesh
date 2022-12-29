@@ -1,6 +1,8 @@
-GENERATED_DIR := ../generated
+GENERATED_DIR := $(realpath ../generated)
 FOUNDATIONS_JSON := $(GENERATED_DIR)/foundations.json
-KEYS := $(shell jq -r '.clusters//{}|keys|.[]' < $(FOUNDATIONS_JSON))
+KEYS := $(shell test -f $(FOUNDATIONS_JSON) && jq -r '.clusters//{}|keys|.[]' $(FOUNDATIONS_JSON))
+
+.NOTPARALLEL:
 
 .DEFAULT: all
 
@@ -27,20 +29,36 @@ register.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/f5xc-site/kust
 	terraform workspace select default
 
 .PHONY: delete.%
-delete.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/f5xc-site/kustomization.yaml
-	-kustomize build $(word 2,$(^D)) | kpt live destroy --kubeconfig $< -
+delete.%:
+	if test -f $(GENERATED_DIR)/$*/kubeconfig.yaml && test -f $(GENERATED_DIR)/$*/f5xc-site/kustomization.yaml; then \
+		kustomize build $(GENERATED_DIR)/$*/f5xc-site | kpt live destroy --kubeconfig $(GENERATED_DIR)/$*/kubeconfig.yaml - ;\
+	fi
 
 .PHONY: unregister.%
-unregister.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/f5xc-site/kustomization.yaml $(FOUNDATIONS_JSON)
-	-terraform workspace select $* && \
-		terraform destroy -auto-approve -input=false \
-		-var foundations_json=$(FOUNDATIONS_JSON) \
-		-var key=$*
-	terraform workspace select default
+unregister.%:
+	if test -f $(FOUNDATIONS_JSON); then \
+		terraform workspace select $* && \
+			terraform destroy -auto-approve -input=false \
+				-var foundations_json=$(FOUNDATIONS_JSON) \
+				-var key=$* ; \
+		terraform workspace select default ; \
+	fi
 
 .PHONY: clean
 clean: $(addprefix unregister.,$(KEYS)) $(addprefix delete.,$(KEYS))
-	if test -d $(GENERATED_DIR); then find $(GENERATED_DIR) -depth 3 -type f -name resourcegroup.yaml -exec rm -f {} +; fi
+	if test -d $(GENERATED_DIR); then \
+		find $(GENERATED_DIR) -depth 3 -type f -name resourcegroup.yaml -exec rm -f {} + ; \
+	fi
 
-.PHONY: realclean
-realclean: clean
+# Try to warn if a missing dependency has not been created
+$(GENERATED_DIR)/%/kubeconfig.yaml:
+	@echo Foundations are not in place
+	@false
+
+$(GENERATED_DIR)/%/f5xc-site/kustomization.yaml:
+	@echo Foundations are not in place
+	@false
+
+$(FOUNDATIONS_JSON):
+	@echo Foundations are not in place
+	@false

@@ -13,23 +13,12 @@ terraform {
 }
 
 locals {
-  common_annotations = merge({
-    "community.f5.com/demo-name"   = "f5xc-gke-site-mesh"
-    "community.f5.com/demo-prefix" = var.prefix
-    "community.f5.com/demo-source" = "github.com/memes/f5xc-gke-site-mesh"
-  }, var.annotations)
   common_labels = merge({
     demo_name   = "f5xc-gke-site-mesh"
     demo_prefix = var.prefix
   }, var.labels)
   resource_names = { for k, v in var.clusters : k => format("%s-%s", var.prefix, k) }
   sa_emails      = { for k, v in var.clusters : k => format("%s@%s.iam.gserviceaccount.com", local.resource_names[k], var.project_id) }
-  annotations = { for k, v in var.clusters : k => merge({
-    "community.f5.com/cluster-key"  = k
-    "community.f5.com/cluster-name" = local.resource_names[k]
-    "community.f5.com/cluster-type" = v.private ? "private" : "public"
-    "community.f5.com/provisioner"  = "terraform"
-  }, local.common_annotations) }
   labels = { for k, v in var.clusters : k => merge({
     cluster_key = k
   }, local.common_labels) }

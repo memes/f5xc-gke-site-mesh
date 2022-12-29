@@ -7,13 +7,13 @@ fileignoreconfig:
 - filename: .github/workflows/pre-commit.yml
   checksum: d973823a6d233c44075ad96c2f92e2d2522b3c5767ef6e8376f0731e8a55ab38
 - filename: f5xc-site/Makefile
-  checksum: 5b4b5ac4ec9bba409b0f906703f3ce4276179d11eb46c9c85c08e8eafdfdae22
+  checksum: 8b0b5ae49395a5719c22abc202422745e3cabf3e605cce7c1cce80093f96b826
 - filename: f5xc-site/main.tf
   checksum: 743ce0ed7eaab284f7419eefc2193af8a630be50888ae70b5359ea632e7b211c
 - filename: echoserver/Makefile
   checksum: 1aa64e81577b9410b29f35fa2f4ad7436924c1c99cd07eb0c955c1e075c43720
 - filename: service-discovery/Makefile
-  checksum: bfc99a54e5ca9271faa4c1fe8d51ac96e421234696e5dcb58781ca07029b5d2b
+  checksum: 193f56c643adfb70aa7b0e1a3e80ccee8bc012cccd58a644dd58328d56b9cb9b
 - filename: foundations/main.tf
   checksum: ac0e1296919f8f43dc9cfaf4d84c9fff1dd9775eaa8cce4582f0b84be1a4843e
 - filename: f5xc-site/upstream/Kptfile
@@ -22,3 +22,5 @@ fileignoreconfig:
   checksum: 87bf8842b185681aa16b90a905a41c805402587fc3cfe980668f52dd029e4d5e
 - filename: f5xc-site/upstream/ce_k8s.yml
   checksum: 1cd5eb9113ef6473e3f7753db843467bc7b8fa408c80ec9f6eab2a6a47c48035
+- filename: application/Makefile
+  checksum: b5c7bb1bd1e62512404e0389e7cf6943f38971123effe86dc22ad4ee2aae67bb

@@ -6,4 +6,4 @@ resources:
   - deployment.yaml
 
 commonAnnotations:
-  community.f5.com/provisioner: kustomize
+  community.f5.com/provisioner: 'kustomize+kubectl'

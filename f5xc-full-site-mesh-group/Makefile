@@ -1,4 +1,4 @@
-GENERATED_DIR := ../generated
+GENERATED_DIR := $(realpath ../generated)
 FOUNDATIONS_JSON := $(GENERATED_DIR)/foundations.json
 
 .DEFAULT: apply
@@ -10,12 +10,16 @@ apply: $(FOUNDATIONS_JSON)
 		-var foundations_json=$<
 
 .PHONY: delete
-delete: $(FOUNDATIONS_JSON)
-	terraform destroy -auto-approve -input=false \
-		-var foundations_json=$<
+delete:
+	if test -f $(FOUNDATIONS_JSON); then \
+		terraform destroy -auto-approve -input=false \
+			-var foundations_json=$(FOUNDATIONS_JSON) ; \
+	fi
 
 .PHONY: clean
 clean: delete
 
-.PHONY: realclean
-realclean: clean
+# Try to warn if a missing dependency has not been created
+$(FOUNDATIONS_JSON):
+	@echo Foundations are not in place
+	@false

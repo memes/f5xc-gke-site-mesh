@@ -1,4 +1,18 @@
 # This file contains generated file resources
+
+locals {
+  common_annotations = merge({
+    "community.f5.com/demo-name"   = "f5xc-gke-site-mesh"
+    "community.f5.com/demo-prefix" = var.prefix
+    "community.f5.com/demo-source" = "github.com/memes/f5xc-gke-site-mesh"
+  }, var.annotations)
+  annotations = { for k, v in var.clusters : k => merge({
+    "community.f5.com/cluster-key"  = k
+    "community.f5.com/cluster-name" = local.resource_names[k]
+    "community.f5.com/cluster-type" = v.private ? "private" : "public"
+  }, local.common_annotations) }
+}
+
 resource "local_file" "public_kubeconfigs" {
   for_each             = module.public
   filename             = format("%s/../generated/%s/kubeconfig.yaml", path.module, each.key)
