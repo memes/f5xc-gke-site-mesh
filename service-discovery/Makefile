@@ -28,7 +28,7 @@ apply.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/service-discovery
 delete.%:
 	if test -f $(GENERATED_DIR)/$*/kubeconfig.yaml && test -f $(GENERATED_DIR)/$*/service-discovery/kustomization.yaml; then \
 		kustomize build $(GENERATED_DIR)/$*/service-discovery | kubectl --kubeconfig $(GENERATED_DIR)/$*/kubeconfig.yaml delete -f - ; \
-		if test -f $(FOUNDATIONS_JSON); then \
+		if test -f $(FOUNDATIONS_JSON) && test -d .terraform; then \
 			terraform workspace select $* && \
 				terraform destroy -auto-approve -input=false \
 					-var foundations_json=$(FOUNDATIONS_JSON) \

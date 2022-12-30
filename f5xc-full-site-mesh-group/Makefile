@@ -11,7 +11,7 @@ apply: $(FOUNDATIONS_JSON)
 
 .PHONY: delete
 delete:
-	if test -f $(FOUNDATIONS_JSON); then \
+	if test -f $(FOUNDATIONS_JSON) && test -d .terraform; then \
 		terraform destroy -auto-approve -input=false \
 			-var foundations_json=$(FOUNDATIONS_JSON) ; \
 	fi

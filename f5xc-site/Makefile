@@ -30,13 +30,13 @@ register.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/f5xc-site/kust
 
 .PHONY: delete.%
 delete.%:
-	if test -f $(GENERATED_DIR)/$*/kubeconfig.yaml && test -f $(GENERATED_DIR)/$*/f5xc-site/kustomization.yaml; then \
+	if test -f $(GENERATED_DIR)/$*/kubeconfig.yaml && test -f $(GENERATED_DIR)/$*/f5xc-site/kustomization.yaml && test -f $(GENERATED_DIR)/%/f5xc-site/resourcegroup.yaml; then \
 		kustomize build $(GENERATED_DIR)/$*/f5xc-site | kpt live destroy --kubeconfig $(GENERATED_DIR)/$*/kubeconfig.yaml - ;\
 	fi
 
 .PHONY: unregister.%
 unregister.%:
-	if test -f $(FOUNDATIONS_JSON); then \
+	if test -f $(FOUNDATIONS_JSON) && test -d .terraform; then \
 		terraform workspace select $* && \
 			terraform destroy -auto-approve -input=false \
 				-var foundations_json=$(FOUNDATIONS_JSON) \

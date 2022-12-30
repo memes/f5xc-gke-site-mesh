@@ -14,7 +14,7 @@ apply.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/application/kusto
 .PHONY: delete.%
 delete.%:
 	if test -f $(GENERATED_DIR)/$*/kubeconfig.yaml && test -f $(GENERATED_DIR)/$*/application/kustomization.yaml; then \
-		kustomize build $(GENERATED_DIR)/$*/application | kubectl --kubeconfig $(GENERATED_DIR)/$*/kubeconfig.yaml delete -f -; \
+		kustomize build $(GENERATED_DIR)/$*/application | kubectl --kubeconfig $(GENERATED_DIR)/$*/kubeconfig.yaml delete -f - || true ; \
 	fi
 
 .PHONY: clean
