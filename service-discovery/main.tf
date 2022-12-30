@@ -40,6 +40,19 @@ data "kubernetes_secret_v1" "secret" {
   }
 }
 
+module "kubeconfig" {
+  # TODO @memes - redirect to published modules
+  source               = "/Users/memes/projects/personal/proteus-wip/private-gke/modules/kubeconfig/"
+  cluster_id           = local.cluster.id
+  cluster_name         = var.key
+  context_name         = var.key
+  use_private_endpoint = true
+  user = {
+    name  = var.service_account
+    token = try(base64decode(data.kubernetes_secret_v1.secret.binary_data["token"]), "")
+  }
+}
+
 resource "volterra_discovery" "cluster" {
   name        = local.cluster.name
   namespace   = "system"
@@ -50,13 +63,7 @@ resource "volterra_discovery" "cluster" {
     access_info {
       kubeconfig_url {
         clear_secret_info {
-          url = "string:///${base64encode(templatefile("${path.module}/templates/kubeconfig.yaml", {
-            name     = local.cluster.name
-            ca_cert  = local.cluster.ca_cert
-            endpoint = local.cluster.endpoint
-            sa       = var.service_account
-            token    = try(base64decode(data.kubernetes_secret_v1.secret.binary_data["token"]), "")
-          }))}"
+          url = "string:///${base64encode(module.kubeconfig.kubeconfig)}"
         }
       }
       isolated = true

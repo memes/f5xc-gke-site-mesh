@@ -13,21 +13,8 @@ locals {
   }, local.common_annotations) }
 }
 
-resource "local_file" "public_kubeconfigs" {
-  for_each             = module.public
-  filename             = format("%s/../generated/%s/kubeconfig.yaml", path.module, each.key)
-  file_permission      = "0644"
-  directory_permission = "0755"
-  content = templatefile("${path.module}/templates/kubeconfig.yaml", {
-    name     = each.value.name
-    ca_cert  = each.value.ca_certificate
-    endpoint = format("https://%s", each.value.endpoint)
-  })
-}
-
-# MEmes' private GKE module includes a kubeconfig output
-resource "local_file" "private_kubeconfigs" {
-  for_each             = module.private
+resource "local_file" "kubeconfigs" {
+  for_each             = module.kubeconfigs
   filename             = format("%s/../generated/%s/kubeconfig.yaml", path.module, each.key)
   file_permission      = "0644"
   directory_permission = "0755"
@@ -102,14 +89,15 @@ resource "local_file" "json" {
     labels      = local.common_labels
     clusters = { for k, v in var.clusters : k => {
       name           = local.resource_names[k]
+      id             = try(module.public[k].cluster_id, module.private[k].id)
       private        = v.private
       network        = module.vpcs[k].self_link
-      subnet         = module.vpcs[k].subnets[v.region]
       tunnel_command = try(replace(module.bastions[k].tunnel_command, "localhost:8888", format("localhost:%d", 8888 + index(keys(var.clusters), k))), null)
+      proxy_url      = v.private ? format("https://:%d", 8888 + index(keys(var.clusters), k)) : null
       sa             = local.sa_emails[k]
-      ca_cert        = try(module.public[k].ca_certificate, module.private[k].ca_cert)
-      endpoint       = try(format("https://%s", module.public[k].endpoint), module.private[k].endpoint_url)
-  } } })
+      }
+    }
+  })
 
   # Try to make this file generation dependent on *all* other modules
   depends_on = [
@@ -119,8 +107,7 @@ resource "local_file" "json" {
     module.bastions,
     module.public,
     module.private,
-    local_file.public_kubeconfigs,
-    local_file.private_kubeconfigs,
+    local_file.kubeconfigs,
     local_file.application_kustomizations,
     local_file.vpm_configs,
     local_file.f5xc_kustomizations,

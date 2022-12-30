@@ -245,12 +245,30 @@ module "private" {
       display_name = format("%s bastion access", title(each.key))
     },
   ]
-  connect = {
-    generate_kubeconfig = true
-    proxy               = format("http://:%d", 8888 + index(keys(var.clusters), each.key))
-  }
   depends_on = [
     module.sas,
     module.vpcs,
   ]
+}
+
+module "kubeconfigs" {
+  for_each = merge(
+    { for k, v in module.public : k => {
+      id                   = v.cluster_id
+      use_private_endpoint = false
+      proxy_url            = null
+      }
+    },
+    { for k, v in module.private : k => {
+      id                   = v.id
+      use_private_endpoint = true
+      proxy_url            = format("http://:%d", 8888 + index(keys(var.clusters), k))
+      }
+    }
+  )
+  # TODO @memes - redirect to published modules
+  source               = "/Users/memes/projects/personal/proteus-wip/private-gke/modules/kubeconfig/"
+  cluster_id           = each.value.id
+  use_private_endpoint = each.value.use_private_endpoint
+  proxy_url            = each.value.proxy_url
 }
