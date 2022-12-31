@@ -9,10 +9,23 @@ resources:
   - resourcegroup.yaml
 
 commonAnnotations: ${jsonencode(annotations)}
-commonLabels: ${jsonencode(labels)}
 configMapGenerator:
   - name: vpm-cfg
     namespace: ves-system
     behavior: replace
     files:
       - config.yaml=vpm-config.yaml
+# Apply labels to the metadata of all resources, but do not update selectors,
+# etc.; commonLabels builtin will update the ver-nodeport-ver-N selectors which
+# will then fail to match resources dynamically added by vp-manager during
+# registration.
+transformers:
+  - |-
+    apiVersion: builtin
+    kind: LabelTransformer
+    metadata:
+      name: metadata-labeler
+    labels: ${jsonencode(labels)}
+    fieldSpecs:
+      - path: metadata/labels
+        create: true
