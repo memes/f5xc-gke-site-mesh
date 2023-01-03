@@ -115,13 +115,14 @@ module "restricted_apis_dns" {
 module "bastions" {
   for_each              = { for k, v in var.clusters : k => v if v.private }
   source                = "memes/private-bastion/google"
-  version               = "2.1.0"
+  version               = "2.2.1"
   project_id            = random_pet.prefix.keepers.project_id
   prefix                = local.resource_names[each.key]
   proxy_container_image = var.bastion_proxy_container_image
   zone                  = data.google_compute_zones.zones[each.value.region].names[0]
   subnet                = module.vpcs[each.key].subnets[each.value.region]
   labels                = local.common_labels
+  local_port            = try(each.value.bastion_port, 8888)
   bastion_targets = {
     cidrs = [
       "172.16.0.0/12",

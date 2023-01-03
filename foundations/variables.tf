@@ -4,8 +4,9 @@ variable "project_id" {
 
 variable "clusters" {
   type = map(object({
-    region  = string
-    private = bool
+    region       = string
+    private      = bool
+    bastion_port = number
   }))
 }
 
@@ -21,7 +22,7 @@ variable "labels" {
 
 variable "bastion_proxy_container_image" {
   type    = string
-  default = "ghcr.io/memes/terraform-google-private-bastion/forward-proxy:2.1.0"
+  default = "ghcr.io/memes/terraform-google-private-bastion/forward-proxy:2.2.1"
 }
 
 variable "site_token" {

@@ -92,8 +92,8 @@ resource "local_file" "json" {
       id             = try(module.public[k].cluster_id, module.private[k].id)
       private        = v.private
       network        = module.vpcs[k].self_link
-      tunnel_command = try(replace(module.bastions[k].tunnel_command, "localhost:8888", format("localhost:%d", 8888 + index(keys(var.clusters), k))), null)
-      proxy_url      = v.private ? format("https://:%d", 8888 + index(keys(var.clusters), k)) : null
+      tunnel_command = try(module.bastions[k].tunnel_command, null)
+      proxy_url      = v.private ? format("http://:%d", try(v.bastion_port, 8888)) : null
       sa             = local.sa_emails[k]
       }
     }
