@@ -7,12 +7,15 @@ KEYS := $(shell test -f $(FOUNDATIONS_JSON) && jq -r '.clusters//{}|keys|.[]' $(
 .DEFAULT: all
 
 .PHONY: all
-all: $(addprefix apply.,$(KEYS))
+all: apply
+
+.PHONY: apply
+apply: $(addprefix apply.,$(KEYS))
 
 .PHONY: apply.%
 apply.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/service-discovery/kustomization.yaml $(FOUNDATIONS_JSON)
 	vesctl configuration get site --namespace system \
-		$(shell jq -r '.clusters.$*.name' <  $(FOUNDATIONS_JSON)) >/dev/null 2>&1 \
+		$(shell jq -r '.clusters."$*".name' <  $(FOUNDATIONS_JSON)) >/dev/null 2>&1 \
 		|| (echo "F5 XC site for $* hasn't been created" && false)
 	kustomize build $(word 2,$(^D)) | kubectl --kubeconfig $< apply -f -
 	terraform init -input=false
@@ -23,6 +26,9 @@ apply.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/service-discovery
 		-var key=$* \
 		$(shell kustomize build $(word 2,$(^D)) | yq eval --no-doc 'select(.kind=="Secret")|.metadata|"-var service_account=" + .annotations."kubernetes.io/service-account.name" + " -var secret_namespace=" + .namespace + " -var secret_name=" + .name')
 	terraform workspace select default
+
+.PHONY: delete
+delete: $(addprefix delete.,$(KEYS))
 
 .PHONY: delete.%
 delete.%:
@@ -40,7 +46,7 @@ delete.%:
 	fi
 
 .PHONY: clean
-clean: $(addprefix delete.,$(KEYS))
+clean: delete
 
 # Try to warn if a missing dependency has not been created
 $(GENERATED_DIR)/%/kubeconfig.yaml:

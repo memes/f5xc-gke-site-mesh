@@ -3,7 +3,7 @@
 locals {
   common_annotations = merge({
     "community.f5.com/demo-name"   = "f5xc-gke-site-mesh"
-    "community.f5.com/demo-prefix" = random_pet.prefix.id
+    "community.f5.com/demo-prefix" = local.prefix
     "community.f5.com/demo-source" = "github.com/memes/f5xc-gke-site-mesh"
   }, var.annotations)
   annotations = { for k, v in var.clusters : k => merge({
@@ -84,17 +84,22 @@ resource "local_file" "json" {
   file_permission      = "0644"
   directory_permission = "0755"
   content = jsonencode({
-    prefix      = random_pet.prefix.id
-    annotations = local.common_annotations
-    labels      = local.common_labels
+    prefix             = local.prefix
+    common_annotations = local.common_annotations
+    common_labels      = local.common_labels
+    f5xc_app_namespace = var.f5xc_app_namespace
     clusters = { for k, v in var.clusters : k => {
       name           = local.resource_names[k]
       id             = try(module.public[k].cluster_id, module.private[k].id)
+      project_id     = var.project_id
+      region         = var.clusters[k].region
       private        = v.private
       network        = module.vpcs[k].self_link
       tunnel_command = try(module.bastions[k].tunnel_command, null)
       proxy_url      = v.private ? format("http://:%d", try(v.bastion_port, 8888)) : null
       sa             = local.sa_emails[k]
+      annotations    = local.annotations[k]
+      labels         = local.labels[k]
       }
     }
   })

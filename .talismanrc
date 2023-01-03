@@ -24,3 +24,5 @@ fileignoreconfig:
   checksum: 1cd5eb9113ef6473e3f7753db843467bc7b8fa408c80ec9f6eab2a6a47c48035
 - filename: application/Makefile
   checksum: b5c7bb1bd1e62512404e0389e7cf6943f38971123effe86dc22ad4ee2aae67bb
+- filename: application/main.tf
+  checksum: fbf5ef461b7750f00ddfbc6d0ada37eb9fd950f974c2cd7a5df65adaeb8c84b5

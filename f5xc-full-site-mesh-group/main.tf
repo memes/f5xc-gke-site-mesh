@@ -15,10 +15,10 @@ provider "volterra" {
 
 locals {
   foundations = jsondecode(file(var.foundations_json))
-  labels      = merge({}, local.foundations.labels)
+  labels      = merge({}, local.foundations.common_labels)
   annotations = merge({
     "community.f5.com/provisioner" = "terraform"
-  }, local.foundations.annotations)
+  }, local.foundations.common_annotations)
 }
 
 # Create a virtual site that matches on a label common to all clusters in the demo.
@@ -30,7 +30,7 @@ resource "volterra_virtual_site" "group" {
   labels      = local.labels
   site_selector {
     expressions = [
-      join(",", [for k, v in local.foundations.labels : format("%s=%s", k, v)])
+      join(",", [for k, v in local.foundations.common_labels : format("%s=%s", k, v)])
     ]
   }
   site_type = "CUSTOMER_EDGE"

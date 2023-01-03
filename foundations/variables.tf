@@ -1,3 +1,7 @@
+variable "prefix" {
+  type = string
+}
+
 variable "project_id" {
   type = string
 }
@@ -26,5 +30,9 @@ variable "bastion_proxy_container_image" {
 }
 
 variable "site_token" {
+  type = string
+}
+
+variable "f5xc_app_namespace" {
   type = string
 }

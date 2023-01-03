@@ -17,7 +17,8 @@ terraform {
 }
 
 resource "random_pet" "prefix" {
-  length = 2
+  length = 1
+  prefix = var.prefix
   keepers = {
     project_id = var.project_id
     site_token = var.site_token
@@ -25,11 +26,15 @@ resource "random_pet" "prefix" {
 }
 
 locals {
+  # Service accounts have a limit of 30 chars - make sure the generated prefix
+  # is not too long such that length("${prefix}-${cluster-key}-bastion") <= 30.
+  max_prefix_length = 21 - max([for k, v in var.clusters : length(k)]...)
+  prefix            = substr(random_pet.prefix.id, 0, local.max_prefix_length)
   common_labels = merge({
     demo_name   = "f5xc-gke-site-mesh"
-    demo_prefix = random_pet.prefix.id
+    demo_prefix = local.prefix
   }, var.labels)
-  resource_names = { for k, v in var.clusters : k => format("%s-%s", random_pet.prefix.id, k) }
+  resource_names = { for k, v in var.clusters : k => format("%s-%s", local.prefix, k) }
   sa_emails      = { for k, v in var.clusters : k => format("%s@%s.iam.gserviceaccount.com", local.resource_names[k], random_pet.prefix.keepers.project_id) }
   labels = { for k, v in var.clusters : k => merge({
     cluster_key = k
@@ -106,7 +111,7 @@ module "restricted_apis_dns" {
   # TODO @memes - redirect to published modules
   source             = "/Users/memes/projects/personal/proteus-wip/restricted-apis-dns/"
   project_id         = random_pet.prefix.keepers.project_id
-  name               = format("%s-restricted-apis", random_pet.prefix.id)
+  name               = format("%s-restricted-apis", local.prefix)
   labels             = local.common_labels
   network_self_links = [for vpc in module.vpcs : vpc.self_link]
 }
@@ -263,13 +268,36 @@ module "kubeconfigs" {
     { for k, v in module.private : k => {
       id                   = v.id
       use_private_endpoint = true
-      proxy_url            = format("http://:%d", 8888 + index(keys(var.clusters), k))
+      proxy_url            = format("http://:%d", try(var.clusters[k].bastion_port, 8888))
       }
     }
   )
   # TODO @memes - redirect to published modules
   source               = "/Users/memes/projects/personal/proteus-wip/private-gke/modules/kubeconfig/"
   cluster_id           = each.value.id
+  cluster_name         = each.key
+  context_name         = each.key
   use_private_endpoint = each.value.use_private_endpoint
   proxy_url            = each.value.proxy_url
+}
+
+# TODO @memes - remove after testing
+# Allow SSH to each public node since there isn't a bastion deployed
+resource "google_compute_firewall" "ssh" {
+  for_each    = { for k, v in var.clusters : k => v if !v.private }
+  project     = var.project_id
+  name        = format("%s-allow-ssh", local.resource_names[each.key])
+  description = "Allows ingress for SSH"
+  network     = module.vpcs[each.key].self_link
+  priority    = 900
+  direction   = "INGRESS"
+  source_ranges = [
+    format("%s/32", trimspace(data.http.my_address.response_body)),
+  ]
+  allow {
+    protocol = "TCP"
+    ports = [
+      22,
+    ]
+  }
 }

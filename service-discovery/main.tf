@@ -24,10 +24,10 @@ provider "kubernetes" {
 locals {
   foundations = jsondecode(file(var.foundations_json))
   cluster     = local.foundations.clusters[var.key]
-  labels      = merge({}, local.foundations.labels)
+  labels      = merge({}, local.cluster.labels)
   annotations = merge({
     "community.f5.com/provisioner" = "terraform"
-  }, local.foundations.annotations)
+  }, local.cluster.annotations)
 }
 
 data "kubernetes_secret_v1" "secret" {

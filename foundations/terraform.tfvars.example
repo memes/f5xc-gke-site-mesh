@@ -1,3 +1,7 @@
+# The prefix to use when generating resources; all created objects will have a
+# name that matches {prefix}-{random_word}-{cluster-key}[-thing]
+prefix = "f5xc"
+
 # The GCP project identifier to use
 project_id  = "my-gcp-project"
 
@@ -6,22 +10,28 @@ clusters = {
     east = {
         region = "us-east1"
         private = false
+        bastion_port = 0
     }
     west = {
         region = "us-west1"
         private = true
+        bastion_port = 8888
     }
 }
 
 # The F5XC site token to use when registering the cluster sites
 site_token = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
 
+# The F5XC namespace where application resources (load balancers, origin pools,
+# etc) will be created.
+f5xc_app_namespace = "my-namespace"
+
 # Optional annotations to add to resources that accept them
 annotations = {
-    "example.com/purpose" = "F5XC site mesh"
+    "example.com/purpose" = "F5XC-site-mesh"
 }
 
 # Optional labels to add to resources
 labels = {
-    "owner" = "tester-name"
+    "owner" = "tester_name"
 }

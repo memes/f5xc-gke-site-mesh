@@ -1,11 +1,11 @@
 GENERATED_DIR := $(realpath ./generated)
 FOUNDATIONS_JSON := $(GENERATED_DIR)/foundations.json
-SUBS := application f5xc-site f5xc-full-site-mesh-group service-discovery
+SUBS := f5xc-site f5xc-full-site-mesh-group service-discovery application
 
 .DEFAULT: foundations
 
 .PHONY: all
-all: $(filter-out service-discovery, $(SUBS)) .WAIT service-discovery
+all: $(filter-out service-discovery application,$(SUBS)) .WAIT service-discovery .WAIT application
 
 .PHONY: $(SUBS)
 $(SUBS): $(FOUNDATIONS_JSON)

@@ -7,7 +7,10 @@ KEYS := $(shell test -f $(FOUNDATIONS_JSON) && jq -r '.clusters//{}|keys|.[]' $(
 .DEFAULT: all
 
 .PHONY: all
-all: $(addprefix apply.,$(KEYS)) $(addprefix register.,$(KEYS))
+all: apply register
+
+.PHONY: apply
+apply: $(addprefix apply.,$(KEYS))
 
 .PHONY: apply.%
 apply.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/f5xc-site/kustomization.yaml $(GENERATED_DIR)/%/f5xc-site/resourcegroup.yaml
@@ -16,6 +19,9 @@ apply.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/f5xc-site/kustomi
 .PRECIOUS: $(GENERATED_DIR)/%/f5xc-site/resourcegroup.yaml
 $(GENERATED_DIR)/%/f5xc-site/resourcegroup.yaml: $(GENERATED_DIR)/%/kubeconfig.yaml
 	kpt live init --kubeconfig $< $(@D)
+
+.PHONY: register
+register: $(addprefix register.,$(KEYS))
 
 .PHONY: register.%
 register.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/f5xc-site/kustomization.yaml $(FOUNDATIONS_JSON)
@@ -28,11 +34,17 @@ register.%: $(GENERATED_DIR)/%/kubeconfig.yaml $(GENERATED_DIR)/%/f5xc-site/kust
 		-var key=$*
 	terraform workspace select default
 
+.PHONY: delete
+delete: $(addprefix delete.,$(KEYS))
+
 .PHONY: delete.%
 delete.%:
-	if test -f $(GENERATED_DIR)/$*/kubeconfig.yaml && test -f $(GENERATED_DIR)/$*/f5xc-site/kustomization.yaml && test -f $(GENERATED_DIR)/%/f5xc-site/resourcegroup.yaml; then \
+	if test -f $(GENERATED_DIR)/$*/kubeconfig.yaml && test -f $(GENERATED_DIR)/$*/f5xc-site/kustomization.yaml && test -f $(GENERATED_DIR)/$*/f5xc-site/resourcegroup.yaml; then \
 		kustomize build $(GENERATED_DIR)/$*/f5xc-site | kpt live destroy --kubeconfig $(GENERATED_DIR)/$*/kubeconfig.yaml - ;\
 	fi
+
+.PHONY: unregister
+unregister: $(addprefix unregister.,$(KEYS))
 
 .PHONY: unregister.%
 unregister.%:
@@ -45,7 +57,7 @@ unregister.%:
 	fi
 
 .PHONY: clean
-clean: $(addprefix unregister.,$(KEYS)) $(addprefix delete.,$(KEYS))
+clean: unregister delete
 	if test -d $(GENERATED_DIR); then \
 		find $(GENERATED_DIR) -depth 3 -type f -name resourcegroup.yaml -exec rm -f {} + ; \
 	fi
