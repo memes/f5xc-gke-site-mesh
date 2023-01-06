@@ -13,6 +13,17 @@ locals {
   }, local.common_annotations) }
 }
 
+# Reserve an IP address for the IPSec/SSL tunnels
+resource "google_compute_address" "vip" {
+  for_each     = { for k, v in var.clusters : k => v if v.private }
+  provider     = google-beta
+  project      = var.project_id
+  name         = local.resource_names[each.key]
+  region       = each.value.region
+  address_type = "EXTERNAL"
+  labels       = local.labels[each.key]
+}
+
 resource "local_file" "kubeconfigs" {
   for_each             = module.kubeconfigs
   filename             = format("%s/../generated/%s/kubeconfig.yaml", path.module, each.key)
@@ -64,6 +75,7 @@ resource "local_file" "f5xc_kustomizations" {
   content = templatefile("${path.module}/templates/f5xc-site/kustomization.yaml", {
     annotations = local.annotations[each.key]
     labels      = local.labels[each.key]
+    vip         = try(google_compute_address.vip[each.key].address, null)
   })
 }
 
@@ -100,6 +112,7 @@ resource "local_file" "json" {
       sa             = local.sa_emails[k]
       annotations    = local.annotations[k]
       labels         = local.labels[k]
+      vip            = try(google_compute_address.vip[k].address, null)
       }
     }
   })

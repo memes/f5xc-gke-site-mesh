@@ -29,3 +29,53 @@ transformers:
     fieldSpecs:
       - path: metadata/labels
         create: true
+%{ if coalesce(vip, "unspecified") != "unspecified" ~}
+# Reconfigure ver-nodeport-ver-0/1/2 to use an L4 LB on the reserved public
+# IP address.
+patches:
+  - target:
+      group: ''
+      version: v1
+      kind: Service
+      name: ver-nodeport-ver-.*
+      namespace: ves-system
+    patch: |-
+      - op: remove
+        path: /spec/ports/0/nodePort
+      - op: replace
+        path: /spec/type
+        value: LoadBalancer
+      - op: add
+        path: /spec/loadBalancerIP
+        value: ${vip}
+  - target:
+      group: ''
+      version: v1
+      kind: Service
+      name: ver-nodeport-ver-0
+      namespace: ves-system
+    patch: |-
+      - op: replace
+        path: /spec/ports/0/port
+        value: 30500
+  - target:
+      group: ''
+      version: v1
+      kind: Service
+      name: ver-nodeport-ver-1
+      namespace: ves-system
+    patch: |-
+      - op: replace
+        path: /spec/ports/0/port
+        value: 30501
+  - target:
+      group: ''
+      version: v1
+      kind: Service
+      name: ver-nodeport-ver-2
+      namespace: ves-system
+    patch: |-
+      - op: replace
+        path: /spec/ports/0/port
+        value: 30502
+%{ endif ~}
