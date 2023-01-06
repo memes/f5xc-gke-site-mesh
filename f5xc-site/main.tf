@@ -28,35 +28,33 @@ locals {
 
 # Add GCP Firewall rules to allow ingress from internet to the advertised IPSec/
 # SSL endpoints.
-resource "google_compute_firewall" "xcmesh" {
-  project     = local.cluster.project_id
-  name        = format("%s-allow-f5xc-mesh", local.cluster.name)
-  description = "Allows ingress for F5XC IPSec/SSL connections"
-  network     = local.cluster.network
-  priority    = 750
-  direction   = "INGRESS"
-  source_ranges = [
-    "0.0.0.0/0",
-  ]
-  target_service_accounts = [
-    local.cluster.sa,
-  ]
+# resource "google_compute_firewall" "xcmesh" {
+#   project     = local.cluster.project_id
+#   name        = format("%s-allow-f5xc-mesh", local.cluster.name)
+#   description = "Allows ingress for F5XC IPSec/SSL connections"
+#   network     = local.cluster.network
+#   priority    = 750
+#   direction   = "INGRESS"
+#   source_ranges = [
+#     "0.0.0.0/0",
+#   ]
+#   target_service_accounts = [
+#     local.cluster.sa,
+#   ]
 
-  allow {
-    protocol = "UDP"
-    ports = [
-      30500,
-      30501,
-      30502,
-    ]
-  }
-  # allow {
-  #   protocol = "TCP"
-  #   ports = [
-  #     443,
-  #   ]
-  # }
-}
+#   allow {
+#     protocol = "UDP"
+#     ports = [
+#       4500,
+#     ]
+#   }
+#   # allow {
+#   #   protocol = "TCP"
+#   #   ports = [
+#   #     443,
+#   #   ]
+#   # }
+# }
 
 # Approve the registrations for the site
 resource "volterra_registration_approval" "site" {
@@ -81,8 +79,8 @@ resource "volterra_modify_site" "site" {
   name                   = local.cluster.name
   namespace              = "system"
   description            = format("%s GKE site %s", local.cluster.private ? "Private" : "Public", var.key)
-  site_to_site_tunnel_ip = local.cluster.vip
-  tunnel_type            = "SITE_TO_SITE_TUNNEL_IPSEC"
+  site_to_site_tunnel_ip = try(local.cluster.vip, null)
+  tunnel_type            = "SITE_TO_SITE_TUNNEL_IPSEC_OR_SSL"
   depends_on = [
     volterra_registration_approval.site,
     volterra_site_state.site,
