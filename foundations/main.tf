@@ -39,6 +39,12 @@ locals {
   labels = { for k, v in var.clusters : k => merge({
     cluster_key = k
   }, local.common_labels) }
+  # GCP resource labels must be lowercase alphanumeric, underscore or hyphen,
+  # and the key must be <= 63 characters in length
+  gcp_common_labels = { for k, v in local.common_labels : replace(substr(lower(k), 0, 64), "/[^[[:alnum:]]_-]/", "_") => replace(lower(v), "/[^[[:alnum:]]_-]/", "_") }
+  gcp_labels = { for k, v in var.clusters : replace(substr(lower(k), 0, 64), "/[^[[:alnum:]]_-]/", "_") => merge({
+    cluster_key = replace(lower(k), "/[^[[:alnum:]]_-]/", "_")
+  }, local.gcp_common_labels) }
 }
 
 data "google_compute_zones" "zones" {
@@ -112,7 +118,7 @@ module "restricted_apis_dns" {
   source             = "/Users/memes/projects/personal/proteus-wip/restricted-apis-dns/"
   project_id         = random_pet.prefix.keepers.project_id
   name               = format("%s-restricted-apis", local.prefix)
-  labels             = local.common_labels
+  labels             = local.gcp_common_labels
   network_self_links = [for vpc in module.vpcs : vpc.self_link]
 }
 
@@ -126,7 +132,7 @@ module "bastions" {
   proxy_container_image = var.bastion_proxy_container_image
   zone                  = data.google_compute_zones.zones[each.value.region].names[0]
   subnet                = module.vpcs[each.key].subnets[each.value.region]
-  labels                = local.common_labels
+  labels                = local.gcp_common_labels
   local_port            = try(each.value.bastion_port, 8888)
   bastion_targets = {
     cidrs = [
@@ -156,7 +162,7 @@ module "public" {
   create_service_account            = false
   grant_registry_access             = false
   service_account                   = local.sa_emails[each.key]
-  cluster_resource_labels           = local.labels[each.key]
+  cluster_resource_labels           = local.gcp_labels[each.key]
   skip_provisioners                 = true
   issue_client_certificate          = false
   identity_namespace                = "enabled"
@@ -189,7 +195,7 @@ module "public" {
     max_count    = 3
   }]
   node_pools_labels = {
-    alpha = local.labels[each.key]
+    alpha = local.gcp_labels[each.key]
   }
   depends_on = [
     module.sas,
@@ -211,7 +217,7 @@ module "private" {
     master_cidr         = "192.168.0.0/28"
   }
   service_account = local.sa_emails[each.key]
-  labels          = local.labels[each.key]
+  labels          = local.gcp_labels[each.key]
   node_pools = {
     alpha = {
       auto_upgrade                = true
@@ -223,7 +229,7 @@ module "private" {
       disk_size                   = 50
       disk_type                   = "pd-standard"
       image_type                  = "COS_CONTAINERD"
-      labels                      = local.labels[each.key]
+      labels                      = local.gcp_labels[each.key]
       local_ssd_count             = 0
       ephemeral_local_ssd_count   = 0
       machine_type                = "e2-standard-4"

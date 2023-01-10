@@ -21,6 +21,9 @@ locals {
   foundations = jsondecode(file(var.foundations_json))
   cluster     = lookup(lookup(local.foundations, "clusters"), var.key)
   labels      = merge({}, local.cluster.labels)
+  # GCP resource labels must be lowercase alphanumeric, underscore or hyphen,
+  # and the key must be <= 63 characters in length
+  gcp_labels = { for k, v in local.labels : replace(substr(lower(k), 0, 64), "/[^[[:alnum:]]_-]/", "_") => replace(lower(v), "/[^[[:alnum:]]_-]/", "_") }
   annotations = merge({
     "community.f5.com/provisioner" = "terraform"
   }, local.cluster.annotations)
@@ -40,7 +43,7 @@ resource "google_compute_address" "ike" {
   name         = local.cluster.name
   region       = local.cluster.region
   address_type = "EXTERNAL"
-  labels       = local.labels
+  labels       = local.gcp_labels
 }
 
 # Every node in a pool should have a functional kube-proxy healthcheck endpoint;
@@ -102,7 +105,7 @@ resource "google_compute_forwarding_rule" "ike" {
   ip_address            = google_compute_address.ike[0].address
   ip_protocol           = "UDP"
   load_balancing_scheme = "EXTERNAL"
-  labels                = local.labels
+  labels                = local.gcp_labels
   backend_service       = google_compute_region_backend_service.ike[0].id
   # Make sure fragmented UDP packets get sent to the same backend
   # See https://cloud.google.com/load-balancing/docs/network/networklb-backend-service#udp_fragmentation

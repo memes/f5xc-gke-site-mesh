@@ -9,13 +9,13 @@ fileignoreconfig:
 - filename: f5xc-site/Makefile
   checksum: 8b0b5ae49395a5719c22abc202422745e3cabf3e605cce7c1cce80093f96b826
 - filename: f5xc-site/main.tf
-  checksum: 743ce0ed7eaab284f7419eefc2193af8a630be50888ae70b5359ea632e7b211c
+  checksum: 46b3b2ccd146df22bdc646a529ba3ca9bff64bb3b853549769aae577418813f9
 - filename: echoserver/Makefile
   checksum: 1aa64e81577b9410b29f35fa2f4ad7436924c1c99cd07eb0c955c1e075c43720
 - filename: service-discovery/Makefile
   checksum: 193f56c643adfb70aa7b0e1a3e80ccee8bc012cccd58a644dd58328d56b9cb9b
 - filename: foundations/main.tf
-  checksum: ac0e1296919f8f43dc9cfaf4d84c9fff1dd9775eaa8cce4582f0b84be1a4843e
+  checksum: 9912e96084f79f958a0cec86e08fcffaf58a265f37ed4eeb8e68ef1fa57dab2e
 - filename: f5xc-site/upstream/Kptfile
   checksum: 94001a6c06a5f2e2c08a389157cfd43d3b3a49a36bf8adc09cc21836d444240e
 - filename: f5xc-site/Kptfile
