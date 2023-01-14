@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata: # kpt-merge: ves-system/ver-nodeport-ver-0
-  name: ver-loadbalancer
+  name: ver-public
   namespace: ves-system
   labels:
     app: ver

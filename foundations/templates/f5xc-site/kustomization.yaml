@@ -37,7 +37,7 @@ patches:
       group: ''
       version: v1
       kind: Service
-      name: ver-loadbalancer
+      name: ver-public
       namespace: ves-system
     patch: |-
       - op: add
