@@ -65,39 +65,40 @@ data "http" "my_address" {
 }
 
 module "regions" {
-  # TODO @memes - redirect to published modules
-  source  = "/Users/memes/projects/personal/proteus-wip/region-detail/"
+  source  = "memes/region-detail/google"
+  version = "1.1.0"
   regions = [for k, v in var.clusters : v.region]
 }
 
 module "sas" {
-  for_each = var.clusters
-  # TODO @memes - redirect to published modules
-  source     = "/Users/memes/projects/personal/proteus-wip/private-gke//modules/sa/"
+  for_each   = var.clusters
+  source     = "memes/private-gke-cluster/google//modules/sa/"
+  version    = "1.0.1"
   project_id = random_pet.prefix.keepers.project_id
   name       = local.resource_names[each.key]
 }
 
 # Create a separate VPC for each cluster
 module "vpcs" {
-  for_each = var.clusters
-  # TODO @memes - update to published modules
-  source      = "/Users/memes/projects/personal/proteus-wip/multi-region-private-network/"
+  for_each    = var.clusters
+  source      = "memes/multi-region-private-network/google"
+  version     = "2.0.0"
   project_id  = random_pet.prefix.keepers.project_id
   name        = local.resource_names[each.key]
   description = format("%s VPC for f5xc-gke-site-mesh demo", title(each.key))
   regions     = [each.value.region]
   cidrs = {
-    primary             = "172.16.0.0/12"
-    primary_subnet_size = 24
+    primary_ipv4_cidr        = "172.16.0.0/12"
+    primary_ipv4_subnet_size = 24
+    primary_ipv6_cidr        = null
     secondaries = {
       pods = {
-        cidr        = "10.0.0.0/9"
-        subnet_size = 16
+        ipv4_cidr        = "10.0.0.0/9"
+        ipv4_subnet_size = 16
       }
       services = {
-        cidr        = "10.128.0.0/16"
-        subnet_size = 24
+        ipv4_cidr        = "10.128.0.0/16"
+        ipv4_subnet_size = 24
       }
     }
   }
@@ -108,14 +109,17 @@ module "vpcs" {
     nat_tags              = []
     mtu                   = 1460
     routing_mode          = "GLOBAL"
+    flow_logs             = true
+    ipv6_ula              = false
+    nat_logs              = true
   }
 }
 
 # Setup Cloud DNS private zones to return restricted API endpoints for Google APIs
 # on all VPCs.
 module "restricted_apis_dns" {
-  # TODO @memes - redirect to published modules
-  source             = "/Users/memes/projects/personal/proteus-wip/restricted-apis-dns/"
+  source             = "memes/restricted-apis-dns/google"
+  version            = "1.2.0"
   project_id         = random_pet.prefix.keepers.project_id
   name               = format("%s-restricted-apis", local.prefix)
   labels             = local.gcp_common_labels
@@ -126,12 +130,12 @@ module "restricted_apis_dns" {
 module "bastions" {
   for_each              = { for k, v in var.clusters : k => v if v.private }
   source                = "memes/private-bastion/google"
-  version               = "2.2.1"
+  version               = "2.3.3"
   project_id            = random_pet.prefix.keepers.project_id
   prefix                = local.resource_names[each.key]
   proxy_container_image = var.bastion_proxy_container_image
   zone                  = data.google_compute_zones.zones[each.value.region].names[0]
-  subnet                = module.vpcs[each.key].subnets[each.value.region]
+  subnet                = module.vpcs[each.key].subnets_by_region[each.value.region].self_link
   labels                = local.gcp_common_labels
   local_port            = try(each.value.bastion_port, 8888)
   bastion_targets = {
@@ -172,7 +176,7 @@ module "public" {
   ip_range_pods                     = "pods"
   ip_range_services                 = "services"
   network                           = regex("[^/]+$", module.vpcs[each.key].self_link)
-  subnetwork                        = regex("[^/]+$", module.vpcs[each.key].subnets[each.value.region])
+  subnetwork                        = regex("[^/]+$", module.vpcs[each.key].subnets_by_region[each.value.region].self_link)
   master_authorized_networks = [
     {
       cidr_block   = format("%s/32", trimspace(data.http.my_address.response_body))
@@ -204,14 +208,14 @@ module "public" {
 }
 
 module "private" {
-  for_each = { for k, v in var.clusters : k => v if v.private }
-  # TODO @memes - redirect to published modules
-  source      = "/Users/memes/projects/personal/proteus-wip/private-gke/"
+  for_each    = { for k, v in var.clusters : k => v if v.private }
+  source      = "memes/private-gke-cluster/google"
+  version     = "1.0.1"
   project_id  = random_pet.prefix.keepers.project_id
   name        = local.resource_names[each.key]
   description = format("%s private GKE cluster for f5xc-gke-site-mesh demo", title(each.key))
   subnet = {
-    self_link           = module.vpcs[each.key].subnets[each.value.region]
+    self_link           = module.vpcs[each.key].subnets_by_region[each.value.region].self_link
     pods_range_name     = "pods"
     services_range_name = "services"
     master_cidr         = "192.168.0.0/28"
@@ -278,8 +282,8 @@ module "kubeconfigs" {
       }
     }
   )
-  # TODO @memes - redirect to published modules
-  source               = "/Users/memes/projects/personal/proteus-wip/private-gke/modules/kubeconfig/"
+  source               = "memes/private-gke-cluster/google//modules/kubeconfig/"
+  version              = "1.0.1"
   cluster_id           = each.value.id
   cluster_name         = each.key
   context_name         = each.key

@@ -41,8 +41,8 @@ data "kubernetes_secret_v1" "secret" {
 }
 
 module "kubeconfig" {
-  # TODO @memes - redirect to published modules
-  source               = "/Users/memes/projects/personal/proteus-wip/private-gke/modules/kubeconfig/"
+  source               = "memes/private-gke-cluster/google//modules/kubeconfig/"
+  version              = "1.0.1"
   cluster_id           = local.cluster.id
   cluster_name         = var.key
   context_name         = var.key
