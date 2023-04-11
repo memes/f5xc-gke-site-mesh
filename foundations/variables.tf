@@ -26,7 +26,7 @@ variable "labels" {
 
 variable "bastion_proxy_container_image" {
   type    = string
-  default = "ghcr.io/memes/terraform-google-private-bastion/forward-proxy:2.2.1"
+  default = "ghcr.io/memes/terraform-google-private-bastion/forward-proxy:2.3.5"
 }
 
 variable "site_token" {

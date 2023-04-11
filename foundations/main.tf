@@ -73,7 +73,7 @@ module "regions" {
 module "sas" {
   for_each   = var.clusters
   source     = "memes/private-gke-cluster/google//modules/sa/"
-  version    = "1.0.1"
+  version    = "1.0.2"
   project_id = random_pet.prefix.keepers.project_id
   name       = local.resource_names[each.key]
 }
@@ -130,7 +130,7 @@ module "restricted_apis_dns" {
 module "bastions" {
   for_each              = { for k, v in var.clusters : k => v if v.private }
   source                = "memes/private-bastion/google"
-  version               = "2.3.3"
+  version               = "2.3.5"
   project_id            = random_pet.prefix.keepers.project_id
   prefix                = local.resource_names[each.key]
   proxy_container_image = var.bastion_proxy_container_image
@@ -210,7 +210,7 @@ module "public" {
 module "private" {
   for_each    = { for k, v in var.clusters : k => v if v.private }
   source      = "memes/private-gke-cluster/google"
-  version     = "1.0.1"
+  version     = "1.0.2"
   project_id  = random_pet.prefix.keepers.project_id
   name        = local.resource_names[each.key]
   description = format("%s private GKE cluster for f5xc-gke-site-mesh demo", title(each.key))
@@ -283,7 +283,7 @@ module "kubeconfigs" {
     }
   )
   source               = "memes/private-gke-cluster/google//modules/kubeconfig/"
-  version              = "1.0.1"
+  version              = "1.0.2"
   cluster_id           = each.value.id
   cluster_name         = each.key
   context_name         = each.key
